@@ -22,7 +22,7 @@
 - 数据可视化：Chart.js
 
 ## 项目结构
-![Uploading image.png…]()
+Pass(哈哈 懒)
 
 ## 贡献
 
