@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+
+{% block title %}进货管理{% endblock %}
+
+{% block content %}
+<h1>进货管理</h1>
+
+<div class="actions">
+    <button id="addPurchaseBtn">新增进货记录</button>
+    <input type="date" id="startDate" placeholder="开始日期">
+    <input type="date" id="endDate" placeholder="结束日期">
+    <button id="searchPurchaseBtn" onclick="searchPurchases()">搜索</button>
+</div>
+
+<table id="purchaseTable">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>商品名称</th>
+            <th>供应商</th>
+            <th>数量</th>
+            <th>单价</th>
+            <th>进货日期</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for purchase in purchases %}
+        <tr>
+            <td>{{ purchase.purchase_id }}</td>
+            <td>{{ purchase.product.name }}</td>
+            <td>{{ purchase.supplier.name }}</td>
+            <td>{{ purchase.quantity }}</td>
+            <td>{{ purchase.unit_price }}</td>
+            <td>{{ purchase.purchase_date.strftime('%Y-%m-%d') }}</td>
+            <td>
+                <button class="editPurchaseBtn" data-id="{{ purchase.purchase_id }}">修改</button>
+                <button class="deletePurchaseBtn" data-id="{{ purchase.purchase_id }}">删除</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div id="addPurchaseModal" class="modal">
+    <div class="modal-content">
+        <h2>新增进货记录</h2>
+        <form id="addPurchaseForm">
+            <label for="product_id">商品:</label>
+            <select id="product_id" name="product_id" required>
+                {% for product in products %}
+                <option value="{{ product.product_id }}">{{ product.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="supplier_id">供应商:</label>
+            <select id="supplier_id" name="supplier_id" required>
+                {% for supplier in suppliers %}
+                <option value="{{ supplier.supplier_id }}">{{ supplier.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="quantity">数量:</label>
+            <input type="number" id="quantity" name="quantity" required min="1">
+
+            <label for="unit_price">单价:</label>
+            <input type="number" id="unit_price" name="unit_price" step="0.01" required min="0">
+
+            <label for="purchase_date">进货日期:</label>
+            <input type="date" id="purchase_date" name="purchase_date" required>
+
+            <button type="submit">保存</button>
+            <button type="button" class="closeModal">取消</button>
+        </form>
+    </div>
+</div>
+
+<div id="editPurchaseModal" class="modal">
+    <div class="modal-content">
+        <h2>修改进货记录</h2>
+        <form id="editPurchaseForm">
+            <input type="hidden" id="editPurchaseId" name="id">
+
+            <label for="editProduct_id">商品:</label>
+            <select id="editProduct_id" name="product_id" required>
+                {% for product in products %}
+                <option value="{{ product.product_id }}">{{ product.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="editSupplier_id">供应商:</label>
+            <select id="editSupplier_id" name="supplier_id" required>
+                {% for supplier in suppliers %}
+                <option value="{{ supplier.supplier_id }}">{{ supplier.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="editQuantity">数量:</label>
+            <input type="number" id="editQuantity" name="quantity" required min="1">
+
+            <label for="editUnit_price">单价:</label>
+            <input type="number" id="editUnit_price" name="unit_price" step="0.01" required min="0">
+
+            <label for="editPurchase_date">进货日期:</label>
+            <input type="date" id="editPurchase_date" name="purchase_date" required>
+
+            <button type="submit">保存</button>
+            <button type="button" class="closeModal">取消</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const PURCHASE_URLS = {
+        list: "{{ url_for('purchase.list_purchases') }}",
+        search: "{{ url_for('purchase.search_purchase') }}",
+        add: "{{ url_for('purchase.add_purchase') }}",
+        edit: "{{ url_for('purchase.edit_purchase', id=0) }}".replace('0', ''),
+        delete: "{{ url_for('purchase.delete_purchase', id=0) }}".replace('0', '')
+    };
+
+function searchPurchases() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+
+    // 如果没有选择日期，则显示所有记录
+    if (!startDate && !endDate) {
+        window.location.href = "{{ url_for('purchase.purchases') }}";
+        return;
+    }
+
+    // 构建查询 URL
+    let url = "{{ url_for('purchase.search_purchase') }}?";
+    if (startDate) url += `start_date=${startDate}&`;
+    if (endDate) url += `end_date=${endDate}&`;
+
+    // 移除最后一个 '&'
+    url = url.slice(0, -1);
+
+    // 重定向到搜索结果页面
+    window.location.href = url;
+}
+    async function addPurchase(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        try {
+            const result = await postData(PURCHASE_URLS.add, Object.fromEntries(formData));
+            if (result.success) {
+                alert('进货记录添加成功');
+                closeModal('addPurchaseModal');
+                await refreshPurchaseTable();
+            } else {
+                alert(`进货记录添加失败: ${result.message}`);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert(`发生错误，请稍后再试: ${error.message}`);
+        }
+    }
+
+    async function editPurchase(purchaseId) {
+        try {
+            console.log('Fetching purchase data for id:', purchaseId);
+            const purchase = await getData(`${PURCHASE_URLS.edit}${purchaseId}`);
+            console.log('Received purchase data:', purchase);
+
+            if (purchase.error) {
+                throw new Error(purchase.error);
+            }
+
+            const fields = ['editPurchaseId', 'editProduct_id', 'editSupplier_id', 'editQuantity', 'editUnit_price', 'editPurchase_date'];
+            const data = ['purchase_id', 'product_id', 'supplier_id', 'quantity', 'unit_price', 'purchase_date'];
+
+            fields.forEach((field, index) => {
+                const element = document.getElementById(field);
+                if (element) {
+                    element.value = purchase[data[index]];
+                } else {
+                    console.error(`Element with id ${field} not found`);
+                }
+            });
+
+            openModal('editPurchaseModal');
+        } catch (error) {
+            console.error('Error:', error);
+            alert(`获取进货记录失败：${error.message}`);
+        }
+    }
+
+    async function submitEditPurchase(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const purchaseId = formData.get('id');
+        try {
+            const result = await postData(`${PURCHASE_URLS.edit}${purchaseId}`, Object.fromEntries(formData));
+            if (result.success) {
+                alert('进货记录修改成功');
+                closeModal('editPurchaseModal');
+                await refreshPurchaseTable();
+            } else {
+                alert(`进货记录修改失败: ${result.message}`);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert(`发生错误，请稍后再试: ${error.message}`);
+        }
+    }
+
+    async function deletePurchase(purchaseId) {
+        if (confirm('确定要删除这条进货记录吗？')) {
+            try {
+                const result = await postData(`${PURCHASE_URLS.delete}${purchaseId}`, {});
+                if (result.success) {
+                    alert('进货记录删除成功');
+                    await refreshPurchaseTable();
+                } else {
+                    alert(`进货记录删除失败: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`发生错误，请稍后再试: ${error.message}`);
+            }
+        }
+    }
+
+    async function refreshPurchaseTable(data) {
+        if (!data) {
+            try {
+                data = await getData(PURCHASE_URLS.list);
+                if (!Array.isArray(data)) {
+                    throw new Error('Invalid response format');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`获取进货记录失败：${error.message}`);
+                return;
+            }
+        }
+        const tbody = document.querySelector('#purchaseTable tbody');
+        tbody.innerHTML = '';
+        data.forEach(purchase => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${purchase.id}</td>
+                <td>${purchase.product_name}</td>
+                <td>${purchase.supplier_name}</td>
+                <td>${purchase.quantity}</td>
+                <td>${purchase.unit_price}</td>
+                <td>${purchase.purchase_date}</td>
+                <td>
+                    <button class="editPurchaseBtn" data-id="${purchase.id}">修改</button>
+                    <button class="deletePurchaseBtn" data-id="${purchase.id}">删除</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function getData(url) {
+        try {
+            console.log('Fetching data from:', url);
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            console.log('Received data:', data);
+            return data;
+        } catch (error) {
+            console.error('Fetch error:', error);
+            throw error;
+        }
+    }
+
+    async function postData(url, data) {
+        try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            if (csrfToken) {
+                headers['X-CSRFToken'] = csrfToken.getAttribute('content');
+            }
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(data),
+            });
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        } catch (error) {
+            console.error('Fetch error:', error);
+            throw error;
+        }
+    }
+
+    function openModal(modalId) {
+        document.getElementById(modalId).style.display = 'block';
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+
+    function initializePurchaseHandlers() {
+        console.log('Initializing purchase handlers');
+
+        const addPurchaseBtn = document.getElementById('addPurchaseBtn');
+        const searchPurchaseBtn = document.getElementById('searchPurchaseBtn');
+        const addPurchaseForm = document.getElementById('addPurchaseForm');
+        const editPurchaseForm = document.getElementById('editPurchaseForm');
+
+        if (addPurchaseBtn) {
+            addPurchaseBtn.addEventListener('click', () => openModal('addPurchaseModal'));
+        }
+
+        if (searchPurchaseBtn) {
+            console.log('Adding click event listener to search button');
+            searchPurchaseBtn.addEventListener('click', searchPurchases);
+        }
+
+        if (addPurchaseForm) {
+            addPurchaseForm.addEventListener('submit', addPurchase);
+        }
+
+        if (editPurchaseForm) {
+            editPurchaseForm.addEventListener('submit', submitEditPurchase);
+        }
+
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('editPurchaseBtn')) {
+                const purchaseId = e.target.getAttribute('data-id');
+                editPurchase(purchaseId);
+            } else if (e.target.classList.contains('deletePurchaseBtn')) {
+                const purchaseId = e.target.getAttribute('data-id');
+                deletePurchase(purchaseId);
+            }
+        });
+
+        document.querySelectorAll('.closeModal').forEach(btn => {
+            btn.addEventListener('click', function() {
+                closeModal(this.closest('.modal').id);
+            });
+        });
+
+        refreshPurchaseTable();
+    }
+
+    document.addEventListener('DOMContentLoaded', initializePurchaseHandlers);
+</script>
+{% endblock %}

@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+
+{% block title %}销售管理{% endblock %}
+
+{% block content %}
+<h1>销售管理</h1>
+
+<div class="actions">
+    <button id="addSaleBtn">新增销售记录</button>
+    <input type="date" id="startDate" placeholder="开始日期">
+    <input type="date" id="endDate" placeholder="结束日期">
+    <button id="searchSaleBtn" onclick="searchSales()">搜索</button>
+</div>
+
+
+
+<table id="saleTable">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>商品名称</th>
+            <th>数量</th>
+            <th>单价</th>
+            <th>总价</th>
+            <th>销售日期</th>
+            <th>销售员</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for sale in sales %}
+        <tr>
+            <td>{{ sale.id }}</td>
+            <td>{{ sale.product_name }}</td>
+            <td>{{ sale.quantity }}</td>
+            <td>{{ sale.unit_price }}</td>
+            <td>{{ sale.total_price }}</td>
+            <td>{{ sale.sale_date }}</td>
+            <td>{{ sale.employee_name }}</td>
+            <td>
+                <button class="editSaleBtn" data-id="{{ sale.id }}">修改</button>
+                <button class="deleteSaleBtn" data-id="{{ sale.id }}">删除</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div id="addSaleModal" class="modal">
+    <div class="modal-content">
+        <h2>新增销售记录</h2>
+        <form id="addSaleForm">
+            <label for="product_id">商品:</label>
+            <select id="product_id" name="product_id" required>
+                {% for product in products %}
+                <option value="{{ product.product_id }}">{{ product.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="employee_id">销售员:</label>
+            <select id="employee_id" name="employee_id" required>
+                {% for employee in employees %}
+                <option value="{{ employee.employee_id }}">{{ employee.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="quantity">数量:</label>
+            <input type="number" id="quantity" name="quantity" required min="1">
+
+            <label for="unit_price">单价:</label>
+            <input type="number" id="unit_price" name="unit_price" step="0.01" required min="0">
+
+            <label for="sale_date">销售日期:</label>
+            <input type="date" id="sale_date" name="sale_date" required>
+
+            <button type="submit">保存</button>
+            <button type="button" class="closeModal">取消</button>
+        </form>
+    </div>
+</div>
+
+<div id="editSaleModal" class="modal">
+    <div class="modal-content">
+        <h2>修改销售记录</h2>
+        <form id="editSaleForm">
+            <input type="hidden" id="editSaleId" name="id">
+
+            <label for="editProduct_id">商品:</label>
+            <select id="editProduct_id" name="product_id" required>
+                {% for product in products %}
+                <option value="{{ product.product_id }}">{{ product.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="editEmployee_id">销售员:</label>
+            <select id="editEmployee_id" name="employee_id" required>
+                {% for employee in employees %}
+                <option value="{{ employee.employee_id }}">{{ employee.name }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="editQuantity">数量:</label>
+            <input type="number" id="editQuantity" name="quantity" required min="1">
+
+            <label for="editUnit_price">单价:</label>
+            <input type="number" id="editUnit_price" name="unit_price" step="0.01" required min="0">
+
+            <label for="editSale_date">销售日期:</label>
+            <input type="date" id="editSale_date" name="sale_date" required>
+
+            <button type="submit">保存</button>
+            <button type="button" class="closeModal">取消</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const SALE_URLS = {
+        list: "{{ url_for('sale.list_sales') }}",
+        search: "{{ url_for('sale.search_sale') }}",
+        add: "{{ url_for('sale.add_sale') }}",
+        edit: "{{ url_for('sale.edit_sale', id=0) }}".replace('0', ''),
+        delete: "{{ url_for('sale.delete_sale', id=0) }}".replace('0', ''),
+        statistics: "{{ url_for('sale.sale_statistics') }}"
+    };
+
+    function searchSales() {
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+
+        // 如果没有选择日期，则显示所有记录
+        if (!startDate && !endDate) {
+            window.location.href = "{{ url_for('sale.sales') }}";
+            return;
+        }
+
+        // 构建查询 URL
+        let url = `${SALE_URLS.search}?`;
+        if (startDate) url += `start_date=${startDate}&`;
+        if (endDate) url += `end_date=${endDate}&`;
+
+        // 移除最后一个 '&'
+        url = url.slice(0, -1);
+
+        // 重定向到搜索结果页面
+        window.location.href = url;
+    }
+
+    async function addSale(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        try {
+            const result = await postData(SALE_URLS.add, Object.fromEntries(formData));
+            if (result.success) {
+                alert('销售记录添加成功');
+                closeModal('addSaleModal');
+                await refreshSaleTable();
+                await updateSaleStatistics();
+            } else {
+                alert(`销售记录添加失败: ${result.message}`);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert(`发生错误，请稍后再试: ${error.message}`);
+        }
+    }
+
+    async function editSale(saleId) {
+        try {
+            console.log('Fetching sale data for id:', saleId);
+            const sale = await getData(`${SALE_URLS.edit}${saleId}`);
+            console.log('Received sale data:', sale);
+
+            if (sale.error) {
+                throw new Error(sale.error);
+            }
+
+            const fields = ['editSaleId', 'editProduct_id', 'editEmployee_id', 'editQuantity', 'editUnit_price', 'editSale_date'];
+            const data = ['sale_id', 'product_id', 'employee_id', 'quantity', 'unit_price', 'sale_date'];
+
+            fields.forEach((field, index) => {
+                const element = document.getElementById(field);
+                if (element) {
+                    element.value = sale[data[index]];
+                } else {
+                    console.error(`Element with id ${field} not found`);
+                }
+            });
+
+            openModal('editSaleModal');
+        } catch (error) {
+            console.error('Error:', error);
+            alert(`获取销售记录失败：${error.message}`);
+        }
+    }
+
+    async function submitEditSale(e) {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const saleId = formData.get('id');
+        try {
+            const result = await postData(`${SALE_URLS.edit}${saleId}`, Object.fromEntries(formData));
+            if (result.success) {
+                alert('销售记录修改成功');
+                closeModal('editSaleModal');
+                await refreshSaleTable();
+                await updateSaleStatistics();
+            } else {
+                alert(`销售记录修改失败: ${result.message}`);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert(`发生错误，请稍后再试: ${error.message}`);
+        }
+    }
+
+
+
+    async function refreshSaleTable(data) {
+        if (!data) {
+            try {
+                data = await getData(SALE_URLS.list);
+                if (!Array.isArray(data)) {
+                    throw new Error('Invalid response format');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert(`获取销售记录失败：${error.message}`);
+                return;
+            }
+        }
+        const tbody = document.querySelector('#saleTable tbody');
+        tbody.innerHTML = '';
+        data.forEach(sale => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${sale.id}</td>
+                <td>${sale.product_name}</td>
+                <td>${sale.employee_name}</td>
+                <td>${sale.quantity}</td>
+                <td>${sale.unit_price}</td>
+                <td>${sale.total_price}</td>
+                <td>${sale.sale_date}</td>
+                <td>
+                    <button class="editSaleBtn" data-id="${sale.id}">修改</button>
+                    <button class="deleteSaleBtn" data-id="${sale.id}">删除</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    async function updateSaleStatistics(startDate, endDate) {
+        try {
+            let url = SALE_URLS.statistics;
+            if (startDate && endDate) {
+                url += `?start_date=${startDate}&end_date=${endDate}`;
+            }
+            const statistics = await getData(url);
+            document.getElementById('totalAmount').textContent = statistics.total_amount.toFixed(2);
+            document.getElementById('totalQuantity').textContent = statistics.total_quantity;
+        } catch (error) {
+            console.error('Error:', error);
+            alert('获取销售统计失败，请稍后再试');
+        }
+    }
+
+    async function getData(url) {
+        try {
+            console.log('Fetching data from:', url);
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            console.log('Received data:', data);
+            return data;
+        } catch (error) {
+            console.error('Fetch error:', error);
+            throw error;
+        }
+    }
+
+    async function postData(url, data) {
+        try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]');
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            if (csrfToken) {
+                headers['X-CSRFToken'] = csrfToken.getAttribute('content');
+            }
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(data),
+            });
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        } catch (error) {
+            console.error('Fetch error:', error);
+            throw error;
+        }
+    }
+
+    function openModal(modalId) {
+        document.getElementById(modalId).style.display = 'block';
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+
+    function initializeSaleHandlers() {
+        console.log('Initializing sale handlers');
+
+        const addSaleBtn = document.getElementById('addSaleBtn');
+        const searchSaleBtn = document.getElementById('searchSaleBtn');
+        const addSaleForm = document.getElementById('addSaleForm');
+        const editSaleForm = document.getElementById('editSaleForm');
+
+        if (addSaleBtn) {
+            addSaleBtn.addEventListener('click', () => openModal('addSaleModal'));
+        }
+
+        if (searchSaleBtn) {
+            console.log('Adding click event listener to search button');
+            searchSaleBtn.addEventListener('click', searchSales);
+        }
+
+        if (addSaleForm) {
+            addSaleForm.addEventListener('submit', addSale);
+        }
+
+        if (editSaleForm) {
+            editSaleForm.addEventListener('submit', submitEditSale);
+        }
+
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('editSaleBtn')) {
+                const saleId = e.target.getAttribute('data-id');
+                editSale(saleId);
+            } else if (e.target.classList.contains('deleteSaleBtn')) {
+                const saleId = e.target.getAttribute('data-id');
+                deleteSale(saleId);
+            }
+        });
+
+        document.querySelectorAll('.closeModal').forEach(btn => {
+            btn.addEventListener('click', function() {
+                closeModal(this.closest('.modal').id);
+            });
+        });
+
+        refreshSaleTable();
+        updateSaleStatistics();
+    }
+
+    document.addEventListener('DOMContentLoaded', initializeSaleHandlers);
+</script>
+{% endblock %}

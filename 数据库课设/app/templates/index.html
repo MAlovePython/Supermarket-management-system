@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 class="dashboard-title">Welcome to the Supermarket Management System</h1>
+
+<div class="dashboard">
+    <div class="dashboard-item">
+        <h2>Quick Links</h2>
+        <ul class="quick-links">
+            <li><a href="{{ url_for('product.products') }}">Manage Products</a></li>
+            <li><a href="{{ url_for('supplier.suppliers') }}">Manage Suppliers</a></li>
+            <li><a href="{{ url_for('employee.employees') }}">Manage Employees</a></li>
+        </ul>
+    </div>
+
+    <div class="dashboard-item">
+        <h2>Recent Sales</h2>
+        <div id="recent-sales" class="data-list">
+            {% for sale in dashboard_data.recent_sales %}
+                <div class="data-item">
+                    <span class="item-name">{{ sale.product }}</span>
+                    <span class="item-detail">{{ sale.quantity }} sold for ${{ sale.total }} on {{ sale.date }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="dashboard-item">
+        <h2>Low Stock Alert</h2>
+        <div id="low-stock-alert" class="data-list">
+            {% for item in dashboard_data.low_stock %}
+                <div class="data-item {% if item.quantity <= item.threshold %}alert{% endif %}">
+                    <span class="item-name">{{ item.product }}</span>
+                    <span class="item-detail">{{ item.quantity }} left (threshold: {{ item.threshold }})</span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="dashboard-item">
+        <h2>Recent Purchases</h2>
+        <div id="recent-purchases" class="data-list">
+            {% for purchase in dashboard_data.recent_purchases %}
+                <div class="data-item">
+                    <span class="item-name">{{ purchase.product }}</span>
+                    <span class="item-detail">{{ purchase.quantity }} bought for ${{ purchase.total }} on {{ purchase.date }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<button onclick="refreshDashboard()" class="refresh-btn">刷新数据</button>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

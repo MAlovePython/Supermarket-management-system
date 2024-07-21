@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}数据分析{% endblock %}
+{% block content %}
+<h1>数据分析</h1>
+
+<div class="actions">
+    <div class="row g-3 align-items-center">
+        <div class="col-auto">
+            <label for="startDate" class="col-form-label">开始日期</label>
+        </div>
+        <div class="col-auto">
+            <input type="date" id="startDate" class="form-control">
+        </div>
+        <div class="col-auto">
+            <label for="endDate" class="col-form-label">结束日期</label>
+        </div>
+        <div class="col-auto">
+            <input type="date" id="endDate" class="form-control">
+        </div>
+        <div class="col-auto">
+            <button id="analyzeBtn" class="btn btn-primary">分析</button>
+        </div>
+    </div>
+</div>
+
+<div id="analysisSection">
+    <div class="row">
+        <div class="col-md-6">
+            <h2>销售趋势</h2>
+            <canvas id="salesTrendChart"></canvas>
+        </div>
+        <div class="col-md-6">
+            <h2>热销商品</h2>
+            <canvas id="topProductsChart"></canvas>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <h2>员工业绩</h2>
+            <canvas id="employeePerformanceChart"></canvas>
+        </div>
+        <div class="analysis-section">
+        <h2>商品利润分析</h2>
+        <div class="chart-container">
+            <canvas id="profitsChart"></canvas>
+        </div>
+        <div class="table-container">
+            <table id="profitsTable" class="data-table">
+            <thead>
+                <tr>
+                <th>商品名称</th>
+                <th>平均售价</th>
+                <th>平均进价</th>
+                <th>单位利润</th>
+                <th>总销量</th>
+                <th>总利润</th>
+                </tr>
+            </thead>
+            <tbody>
+        <!-- 数据将通过 JavaScript 动态填充 -->
+            </tbody>
+            </table>
+        </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <h2>库存周转率</h2>
+            <canvas id="inventoryTurnoverChart"></canvas>
+            <table id="inventoryTurnoverTable" class="table table-striped mt-3">
+
+                <tbody>
+                    <!-- 数据将通过 JavaScript 动态填充 -->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <div class="actions mt-4">
+        <button id="exportCsvBtn" class="btn btn-success">导出 Excel</button>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% endblock %}

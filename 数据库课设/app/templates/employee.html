@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}员工管理{% endblock %}
+
+{% block content %}
+<h1>员工管理</h1>
+
+<div class="actions">
+    <button id="addEmployeeBtn">添加员工</button>
+    <input type="text" id="searchEmployee" placeholder="搜索员工...">
+</div>
+
+<table id="employeeTable">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>姓名</th>
+            <th>职位</th>
+            <th>电话</th>
+            <th>入职日期</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for employee in employees %}
+        <tr>
+            <td>{{ employee.employee_id }}</td>
+            <td>{{ employee.name }}</td>
+            <td>{{ employee.position }}</td>
+            <td>{{ employee.phone }}</td>
+            <td>{{ employee.hire_date.strftime('%Y-%m-%d') }}</td>
+            <td>
+                <button class="editEmployeeBtn" data-id="{{ employee.employee_id }}">修改</button>
+                <button class="deleteEmployeeBtn" data-id="{{ employee.employee_id }}">删除</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div id="addEmployeeModal" class="modal">
+    <div class="modal-content">
+        <h2>添加员工</h2>
+        <form id="addEmployeeForm">
+            <label for="name">姓名:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="position">职位:</label>
+            <input type="text" id="position" name="position" required>
+
+            <label for="phone">电话:</label>
+            <input type="tel" id="phone" name="phone" required>
+
+            <label for="hire_date">入职日期:</label>
+            <input type="date" id="hire_date" name="hire_date" required>
+
+            <button type="submit">保存</button>
+            <button type="button" class="closeModal">取消</button>
+        </form>
+    </div>
+</div>
+
+<div id="editEmployeeModal" class="modal">
+    <div class="modal-content">
+        <h2>修改员工信息</h2>
+        <form id="editEmployeeForm">
+            <input type="hidden" id="editEmployeeId" name="id">
+
+            <label for="editName">姓名:</label>
+            <input type="text" id="editName" name="name" required>
+
+            <label for="editPosition">职位:</label>
+            <input type="text" id="editPosition" name="position" required>
+
+            <label for="editPhone">电话:</label>
+            <input type="tel" id="editPhone" name="phone" required>
+
+            <label for="editHireDate">入职日期:</label>
+            <input type="date" id="editHireDate" name="hire_date" required>
+
+            <button type="submit">保存</button>
+            <button type="button" class="closeModal">取消</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 添加员工
+    document.getElementById('addEmployeeBtn').addEventListener('click', function() {
+        document.getElementById('addEmployeeModal').style.display = 'block';
+    });
+
+    document.getElementById('addEmployeeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        fetch("{{ url_for('employee.add_employee') }}", {
+            method: 'POST',
+            body: new FormData(this)
+        }).then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('添加员工失败');
+            }
+        });
+    });
+
+    // 修改员工
+    document.querySelectorAll('.editEmployeeBtn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const employeeId = this.getAttribute('data-id');
+            fetch(`/employee/${employeeId}`)
+            .then(response => response.json())
+            .then(employee => {
+                document.getElementById('editEmployeeId').value = employee.employee_id;
+                document.getElementById('editName').value = employee.name;
+                document.getElementById('editPosition').value = employee.position;
+                document.getElementById('editPhone').value = employee.phone;
+                document.getElementById('editHireDate').value = employee.hire_date;
+                document.getElementById('editEmployeeModal').style.display = 'block';
+            });
+        });
+    });
+
+    document.getElementById('editEmployeeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const employeeId = document.getElementById('editEmployeeId').value;
+        fetch(`{{ url_for('employee.edit_employee', id=0) }}`.replace('0', employeeId), {
+            method: 'POST',
+            body: new FormData(this)
+        }).then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('修改员工信息失败');
+            }
+        });
+    });
+
+    // 删除员工
+    document.querySelectorAll('.deleteEmployeeBtn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            if (confirm('确定要删除这个员工吗？')) {
+                const employeeId = this.getAttribute('data-id');
+                fetch(`{{ url_for('employee.delete_employee', id=0) }}`.replace('0', employeeId), {
+                    method: 'POST'
+                }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('删除员工失败');
+                    }
+                });
+            }
+        });
+    });
+
+    // 搜索员工
+    document.getElementById('searchEmployee').addEventListener('input', function() {
+        const query = this.value;
+        fetch(`{{ url_for('employee.search_employee') }}?query=${query}`)
+        .then(response => response.json())
+        .then(employees => {
+            const tbody = document.querySelector('#employeeTable tbody');
+            tbody.innerHTML = '';
+            employees.forEach(employee => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${employee.id}</td>
+                    <td>${employee.name}</td>
+                    <td>${employee.position}</td>
+                    <td>${employee.phone}</td>
+                    <td>${employee.hire_date}</td>
+                    <td>
+                        <button class="editEmployeeBtn" data-id="${employee.id}">修改</button>
+                        <button class="deleteEmployeeBtn" data-id="${employee.id}">删除</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        });
+    });
+
+    // 关闭模态框
+    document.querySelectorAll('.closeModal').forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.closest('.modal').style.display = 'none';
+        });
+    });
+</script>
+{% endblock %}

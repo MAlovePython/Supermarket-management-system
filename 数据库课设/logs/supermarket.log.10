@@ -1,0 +1,95 @@
+2024-07-18 21:50:26,830 INFO: Supermarket startup [in E:\My struggle\数据库课设\app\__init__.py:45]
+2024-07-18 21:50:27,522 INFO: Supermarket startup [in E:\My struggle\数据库课设\app\__init__.py:45]
+2024-07-18 21:50:31,037 INFO: Rendering analysis page [in E:\My struggle\数据库课设\app\routes\analysis.py:20]
+2024-07-18 21:50:31,914 INFO: Sales trend analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:25]
+2024-07-18 21:50:31,918 INFO: Top products analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:52]
+2024-07-18 21:50:31,921 INFO: Employee performance analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:82]
+2024-07-18 21:50:31,924 INFO: Inventory turnover analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:151]
+2024-07-18 21:50:38,771 INFO: Sales trend analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:25]
+2024-07-18 21:50:38,784 INFO: Top products analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:52]
+2024-07-18 21:50:38,797 INFO: Employee performance analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:82]
+2024-07-18 21:50:38,834 INFO: Inventory turnover analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:151]
+2024-07-18 21:51:11,666 INFO: Supermarket startup [in E:\My struggle\数据库课设\app\__init__.py:45]
+2024-07-18 21:51:12,617 INFO: Supermarket startup [in E:\My struggle\数据库课设\app\__init__.py:45]
+2024-07-18 21:51:14,339 INFO: Rendering analysis page [in E:\My struggle\数据库课设\app\routes\analysis.py:20]
+2024-07-18 21:51:15,387 INFO: Customer behavior analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:180]
+2024-07-18 21:51:15,388 INFO: Sales trend analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:25]
+2024-07-18 21:51:15,390 INFO: Top products analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:52]
+2024-07-18 21:51:15,393 INFO: Employee performance analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:82]
+2024-07-18 21:51:15,396 INFO: Inventory turnover analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:151]
+2024-07-18 21:51:20,340 INFO: Sales trend analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:25]
+2024-07-18 21:51:20,353 INFO: Top products analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:52]
+2024-07-18 21:51:20,364 INFO: Employee performance analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:82]
+2024-07-18 21:51:20,398 INFO: Inventory turnover analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:151]
+2024-07-18 21:51:20,426 ERROR: Error in generate_report: name 'wb' is not defined [in E:\My struggle\数据库课设\app\routes\analysis.py:227]
+2024-07-18 21:51:20,429 ERROR: Traceback (most recent call last):
+  File "E:\My struggle\数据库课设\app\routes\analysis.py", line 208, in generate_report
+    generate_csv_report(temp_file, report_data)
+  File "E:\My struggle\数据库课设\app\routes\analysis.py", line 292, in generate_csv_report
+    wb.save(output)
+NameError: name 'wb' is not defined
+ [in E:\My struggle\数据库课设\app\routes\analysis.py:228]
+2024-07-18 21:51:42,202 INFO: Rendering analysis page [in E:\My struggle\数据库课设\app\routes\analysis.py:20]
+2024-07-18 21:51:44,144 INFO: Supermarket startup [in E:\My struggle\数据库课设\app\__init__.py:45]
+2024-07-18 21:51:44,476 INFO: Sales trend analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:25]
+2024-07-18 21:51:44,827 INFO: Top products analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:52]
+2024-07-18 21:51:44,838 INFO: Employee performance analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:82]
+2024-07-18 21:51:44,990 INFO: Inventory turnover analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:151]
+2024-07-18 21:51:45,004 ERROR: Error in generate_report: a bytes-like object is required, not 'str' [in E:\My struggle\数据库课设\app\routes\analysis.py:221]
+2024-07-18 21:51:45,006 ERROR: Traceback (most recent call last):
+  File "E:\My struggle\数据库课设\app\routes\analysis.py", line 203, in generate_report
+    output = generate_csv_report(report_data)
+  File "E:\My struggle\数据库课设\app\routes\analysis.py", line 236, in generate_csv_report
+    write_row(["销售趋势"])
+  File "E:\My struggle\数据库课设\app\routes\analysis.py", line 233, in write_row
+    writer.writerow([str(item).encode('utf-8') for item in row])
+TypeError: a bytes-like object is required, not 'str'
+ [in E:\My struggle\数据库课设\app\routes\analysis.py:222]
+2024-07-18 21:51:47,774 INFO: Rendering analysis page [in E:\My struggle\数据库课设\app\routes\analysis.py:20]
+2024-07-18 21:51:50,421 INFO: Customer behavior analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:180]
+2024-07-18 21:51:50,424 INFO: Sales trend analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:25]
+2024-07-18 21:51:50,426 INFO: Top products analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:52]
+2024-07-18 21:51:50,429 INFO: Employee performance analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:82]
+2024-07-18 21:51:50,432 INFO: Inventory turnover analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:151]
+2024-07-18 21:54:18,101 INFO: Supermarket startup [in E:\My struggle\数据库课设\app\__init__.py:45]
+2024-07-18 21:54:18,226 INFO: Rendering analysis page [in E:\My struggle\数据库课设\app\routes\analysis.py:20]
+2024-07-18 21:54:22,126 INFO: Sales trend analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:25]
+2024-07-18 21:54:22,127 INFO: Top products analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:52]
+2024-07-18 21:54:22,131 INFO: Employee performance analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:82]
+2024-07-18 21:54:22,133 INFO: Inventory turnover analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:151]
+2024-07-18 21:54:41,855 INFO: Rendering analysis page [in E:\My struggle\数据库课设\app\routes\analysis.py:20]
+2024-07-18 21:54:45,194 INFO: Sales trend analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:25]
+2024-07-18 21:54:45,195 INFO: Top products analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:52]
+2024-07-18 21:54:45,198 INFO: Employee performance analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:82]
+2024-07-18 21:54:45,200 INFO: Inventory turnover analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:151]
+2024-07-18 21:54:50,976 INFO: Sales trend analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:25]
+2024-07-18 21:54:50,989 INFO: Top products analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:52]
+2024-07-18 21:54:51,000 INFO: Employee performance analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:82]
+2024-07-18 21:54:51,038 INFO: Inventory turnover analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:151]
+2024-07-18 21:57:01,406 INFO: Supermarket startup [in E:\My struggle\数据库课设\app\__init__.py:45]
+2024-07-18 21:57:02,079 INFO: Supermarket startup [in E:\My struggle\数据库课设\app\__init__.py:45]
+2024-07-18 21:57:17,246 INFO: Rendering analysis page [in E:\My struggle\数据库课设\app\routes\analysis.py:20]
+2024-07-18 21:57:18,410 INFO: Sales trend analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:25]
+2024-07-18 21:57:18,414 INFO: Top products analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:52]
+2024-07-18 21:57:18,415 INFO: Employee performance analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:82]
+2024-07-18 21:57:18,417 INFO: Inventory turnover analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:151]
+2024-07-18 21:57:34,929 INFO: Sales trend analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:25]
+2024-07-18 21:57:34,957 INFO: Top products analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:52]
+2024-07-18 21:57:34,991 INFO: Employee performance analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:82]
+2024-07-18 21:57:35,017 INFO: Inventory turnover analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:151]
+2024-07-18 21:57:35,028 ERROR: Error in generate_report: name 'BytesIO' is not defined [in E:\My struggle\数据库课设\app\routes\analysis.py:197]
+2024-07-18 21:57:35,030 ERROR: Traceback (most recent call last):
+  File "E:\My struggle\数据库课设\app\routes\analysis.py", line 185, in generate_report
+    output = BytesIO()
+NameError: name 'BytesIO' is not defined
+ [in E:\My struggle\数据库课设\app\routes\analysis.py:198]
+2024-07-18 21:59:51,029 INFO: Supermarket startup [in E:\My struggle\数据库课设\app\__init__.py:45]
+2024-07-18 22:00:04,045 INFO: Supermarket startup [in E:\My struggle\数据库课设\app\__init__.py:45]
+2024-07-18 22:00:04,691 INFO: Rendering analysis page [in E:\My struggle\数据库课设\app\routes\analysis.py:23]
+2024-07-18 22:00:07,234 INFO: Sales trend analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:28]
+2024-07-18 22:00:11,935 INFO: Top products analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:55]
+2024-07-18 22:00:11,949 INFO: Employee performance analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:85]
+2024-07-18 22:00:12,011 INFO: Inventory turnover analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:154]
+2024-07-18 22:00:12,044 ERROR: Error in generate_report: a bytes-like object is required, not 'str' [in E:\My struggle\数据库课设\app\routes\analysis.py:200]
+2024-07-18 22:00:32,546 INFO: Rendering analysis page [in E:\My struggle\数据库课设\app\routes\analysis.py:23]
+2024-07-18 22:00:34,466 INFO: Sales trend analysis requested [in E:\My struggle\数据库课设\app\routes\analysis.py:28]

@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+
+{% block title %}供应商管理{% endblock %}
+
+{% block content %}
+<h1>供应商管理</h1>
+
+<div class="actions">
+    <button id="addSupplierBtn">添加供应商</button>
+    <input type="text" id="searchSupplier" placeholder="搜索供应商...">
+</div>
+
+<table id="supplierTable">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>名称</th>
+            <th>联系人</th>
+            <th>电话</th>
+            <th>地址</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for supplier in suppliers %}
+        <tr>
+            <td>{{ supplier.supplier_id }}</td>
+            <td>{{ supplier.name }}</td>
+            <td>{{ supplier.contact_person }}</td>
+            <td>{{ supplier.phone }}</td>
+            <td>{{ supplier.address }}</td>
+            <td>
+                <button class="editSupplierBtn" data-id="{{ supplier.supplier_id }}">修改</button>
+                <button class="deleteSupplierBtn" data-id="{{ supplier.supplier_id }}">删除</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div id="addSupplierModal" class="modal">
+    <div class="modal-content">
+        <h2>添加供应商</h2>
+        <form id="addSupplierForm">
+            <label for="name">名称:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="contact_person">联系人:</label>
+            <input type="text" id="contact_person" name="contact_person" required>
+
+            <label for="phone">电话:</label>
+            <input type="tel" id="phone" name="phone" required>
+
+            <label for="address">地址:</label>
+            <input type="text" id="address" name="address" required>
+
+            <button type="submit">保存</button>
+            <button type="button" class="closeModal">取消</button>
+        </form>
+    </div>
+</div>
+
+<div id="editSupplierModal" class="modal">
+    <div class="modal-content">
+        <h2>修改供应商</h2>
+        <form id="editSupplierForm">
+            <input type="hidden" id="editSupplierId" name="id">
+
+            <label for="editName">名称:</label>
+            <input type="text" id="editName" name="name" required>
+
+            <label for="editContactPerson">联系人:</label>
+            <input type="text" id="editContactPerson" name="contact_person" required>
+
+            <label for="editPhone">电话:</label>
+            <input type="tel" id="editPhone" name="phone" required>
+
+            <label for="editAddress">地址:</label>
+            <input type="text" id="editAddress" name="address" required>
+
+            <button type="submit">保存</button>
+            <button type="button" class="closeModal">取消</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Supplier page loaded');
+
+    // 添加供应商
+    document.getElementById('addSupplierBtn').addEventListener('click', function() {
+        console.log('Add supplier button clicked');
+        openModal('addSupplierModal');
+    });
+
+    document.getElementById('addSupplierForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        console.log('Add supplier form submitted');
+        const formData = new FormData(this);
+        try {
+            const result = await postData("{{ url_for('supplier.add_supplier') }}", Object.fromEntries(formData));
+            if (result.success) {
+                alert('添加供应商成功');
+                location.reload();
+            } else {
+                alert('添加供应商失败: ' + result.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('发生错误，请稍后再试');
+        }
+    });
+
+    // 修改供应商
+    document.addEventListener('click', async function(e) {
+        if (e.target.classList.contains('editSupplierBtn')) {
+            const supplierId = e.target.getAttribute('data-id');
+            console.log('Edit supplier button clicked for ID:', supplierId);
+            try {
+                const supplier = await getData("{{ url_for('supplier.get_supplier', id=0) }}".replace('0', supplierId));
+                document.getElementById('editSupplierId').value = supplier.supplier_id;
+                document.getElementById('editName').value = supplier.name;
+                document.getElementById('editContactPerson').value = supplier.contact_person;
+                document.getElementById('editPhone').value = supplier.phone;
+                document.getElementById('editAddress').value = supplier.address;
+                openModal('editSupplierModal');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('获取供应商信息失败，请稍后再试');
+            }
+        }
+    });
+
+    document.getElementById('editSupplierForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        console.log('Edit supplier form submitted');
+        const formData = new FormData(this);
+        const supplierId = formData.get('id');
+        try {
+            const result = await postData("{{ url_for('supplier.edit_supplier', id=0) }}".replace('0', supplierId), Object.fromEntries(formData));
+            if (result.success) {
+                alert('修改供应商成功');
+                location.reload();
+            } else {
+                alert('修改供应商失败: ' + result.message);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('发生错误，请稍后再试');
+        }
+    });
+
+    // 删除供应商
+    document.addEventListener('click', async function(e) {
+        if (e.target.classList.contains('deleteSupplierBtn')) {
+            const supplierId = e.target.getAttribute('data-id');
+            console.log('Delete supplier button clicked for ID:', supplierId);
+            if (confirm('确定要删除这个供应商吗？')) {
+                try {
+                    const result = await postData("{{ url_for('supplier.delete_supplier', id=0) }}".replace('0', supplierId), {});
+                    if (result.success) {
+                        alert('删除供应商成功');
+                        location.reload();
+                    } else {
+                        alert('删除供应商失败: ' + result.message);
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('发生错误，请稍后再试');
+                }
+            }
+        }
+    });
+
+    // 搜索供应商
+    document.getElementById('searchSupplier').addEventListener('input', async function() {
+        const query = this.value;
+        console.log('Searching suppliers with query:', query);
+        try {
+            const suppliers = await getData(`{{ url_for('supplier.search_supplier') }}?query=${query}`);
+            refreshTable('supplierTable', suppliers, ['id', 'name', 'contact_person', 'phone', 'address']);
+        } catch (error) {
+            console.error('Error:', error);
+            alert('搜索出错，请稍后再试');
+        }
+    });
+
+    // 关闭模态框
+    document.querySelectorAll('.closeModal').forEach(btn => {
+        btn.addEventListener('click', function() {
+            closeModal(this.closest('.modal').id);
+        });
+    });
+});
+</script>
+{% endblock %}
